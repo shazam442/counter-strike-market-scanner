@@ -1,0 +1,7 @@
+.DS_Store
+**/log.txt
+**/buy_log.txt
+**/error_log.txt
+**/.byebug_history
+.env
+test.rb
