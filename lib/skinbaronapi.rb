@@ -19,7 +19,7 @@ class SkinbaronApi
     end
 
     def getListings 
-        listings = @item_list.map { |i| getCheapestItem(i) }
+        listings = @item_list.map { |i| getCheapestListing(i) }
         listings.compact
     rescue
         byebug
@@ -57,7 +57,7 @@ class SkinbaronApi
         )
     end
 
-    def getCheapestItem item_name
+    def getCheapestListing item_name
         body = {
             appid: 730,
             search_item: item_name,
