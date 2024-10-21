@@ -1,4 +1,7 @@
+module API
 class Skinbaron
+    attr_accessor :item_list
+    
     def initialize(api_key, item_list)
         @base_url = 'https://api.skinbaron.de'
     
@@ -21,8 +24,6 @@ class Skinbaron
     def getListings 
         listings = @item_list.map { |i| getCheapestListing(i) }
         listings.compact
-    rescue
-        byebug
     end
 
     def buyItem(price, id)
@@ -85,4 +86,5 @@ class Skinbaron
     def buyLogger(message)
         File.write(File.join(File.dirname(__FILE__), '../logs/buy_log.txt'), message, mode: 'a')
     end
+end
 end

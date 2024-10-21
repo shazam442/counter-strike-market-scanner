@@ -5,14 +5,12 @@ require 'byebug'
 require 'colorize'
 
 require_relative './steamscraper.rb'
-module API
-    require_relative './accessors/skinport.rb'
-    require_relative './accessors/skinbaron.rb'
-end
+require_relative './accessors/skinport.rb'
+require_relative './accessors/skinbaron.rb'
 
 def loading_time seconds
     timer = "[#{"-"*seconds}]\r"
-    for i in 0..seconds do
+    for _ in 0..seconds do
         print timer
         timer.sub!("-","*")
         10.times { sleep 0.1 }
@@ -68,6 +66,4 @@ rescue JSON::ParserError => e
         pp "STACK TRACE", e.backtrace
         raise "Bad Authenticity Token"
     end
-rescue => e
-    byebug
 end

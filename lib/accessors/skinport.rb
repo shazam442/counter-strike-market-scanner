@@ -1,10 +1,10 @@
 require 'base64'
 
+module API
 class Skinport
     attr_reader :last_fetched_listings
 
     attr_accessor :item_list
-    
 
     def initialize(client_id, client_secret, item_list)
         @BASE_API_URL = "https://api.skinport.com/v1"
@@ -19,11 +19,24 @@ class Skinport
     end
 
     def getListings
-        denyArray = [ 'Souvenir', 'StatTrak' ]
-        @last_fetched_listings = fetchListings({allowArray: @item_list, denyArray: denyArray})
+        deny_array = [ 'Souvenir', 'StatTrak' ]
+        @last_fetched_listings = fetchListings({allow_array: @item_list, deny_array: deny_array})
     end
 
     private
+
+    def get(params = {})
+        raise "Endpoint must be specified" if params[:endpoint].nil?
+        url_to_endpoint = "#{@BASE_API_URL}/#{params[:endpoint]}"
+        headers = @base_headers.merge(params[:headers] || {} )
+        body = @base_body.merge(params[:body] || {} ).to_json
+
+        HTTParty.get(
+            url_to_endpoint,
+            headers: headers,
+            body: body
+        )
+    end
 
     def generateAuthHeader(client_id, client_secret)
         clientData = "#{client_id}:#{client_secret}"
@@ -48,18 +61,23 @@ class Skinport
         end
     end
 
-    def fetchListings allowArray=[], denyArray=[]
-        response = getRequest 'items'
+    def fetchListings(params = {})
+        allow_array = params[:allow_array]
+        deny_array = params[:deny_array]
+    
+        response = get(endpoint: "items")
+        byebug unless response.success?
+
         allItems = JSON.parse response.body
 
         allowed_items = allItems.select do |item|
-            allowArray.any? do |allowedString|
+            allow_array.any? do |allowedString|
                 item['market_hash_name'][allowedString]
             end
         end
 
         allowed_items_filtered = allowed_items.reject do |item|
-            denyArray.any? do |deniedString|
+            deny_array.any? do |deniedString|
                 item['market_hash_name'][deniedString]
             end
         end
@@ -67,14 +85,5 @@ class Skinport
         allowed_items_filtered_sorted = allowed_items_filtered.sort_by { |item| item['market_hash_name'] }
         transform_data(allowed_items_filtered_sorted)
     end
-
-    def get(params = {})
-        raise "Endpoint must be specified" if params[:endpoint].nil?
-
-        HTTParty.get(
-            "#{@BASE_API_URL}/#{params[:endpoint]}",
-            headers: @base_headers.merge(params[:headers] || {} ),
-            body: @base_body.merge(params[:body] || {} )
-        )
-    end
+end
 end
