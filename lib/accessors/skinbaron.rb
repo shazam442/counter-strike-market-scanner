@@ -1,4 +1,4 @@
-class SkinbaronApi
+class Skinbaron
     def initialize(api_key, item_list)
         @base_url = 'https://api.skinbaron.de'
     
@@ -42,7 +42,7 @@ class SkinbaronApi
     private
 
     def post(params = {})
-        raise "Endpoint path must be specified" if params[:endpoint].nil?
+        raise "Endpoint must be specified" if params[:endpoint].nil?
 
         body = @base_body
             .merge(params[:body] || {})
