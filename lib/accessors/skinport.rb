@@ -3,7 +3,6 @@ require 'base64'
 module API
 class Skinport
     attr_reader :last_fetched_listings
-
     attr_accessor :item_list
 
     def initialize(client_id, client_secret, item_list)
@@ -16,9 +15,12 @@ class Skinport
             currency: 'EUR'
         }
         @item_list = item_list
+        @last_item_fetch_time = Time.now
     end
 
     def getListings
+        return @last_fetched_listings if @last_item_fetch_time <= (Time.now - 5 * 60) # skinport endpoint is cached by 5 minutes
+        
         deny_array = [ 'Souvenir', 'StatTrak' ]
         @last_fetched_listings = fetchListings({allow_array: @item_list, deny_array: deny_array})
     end
@@ -65,6 +67,8 @@ class Skinport
         allow_array = params[:allow_array]
         deny_array = params[:deny_array]
     
+        @last_item_fetch_time = Time.now
+        
         response = get(endpoint: "items")
         byebug unless response.success?
 

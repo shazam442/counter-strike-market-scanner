@@ -67,7 +67,7 @@ class Skinbaron
             items_per_page: 0
         }
         response = post(endpoint: "Search", body: body)
-        return 'TOO MANY REQUESTS' if response.code == 429
+        return {error: 'TOO MANY REQUESTS', source: 'Skinbaron'} if response.code == 429
 
         items = response.to_h["sales"]
         wear_filtered_items = items.select do |item|
