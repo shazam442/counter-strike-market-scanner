@@ -4,7 +4,7 @@ require 'dotenv/load'
 require 'byebug'
 require 'colorize'
 
-require_relative './steamscraper.rb'
+require_relative './accessors/steamscraper.rb'
 require_relative './accessors/skinport.rb'
 require_relative './accessors/skinbaron.rb'
 
