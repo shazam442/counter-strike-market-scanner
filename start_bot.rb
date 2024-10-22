@@ -7,9 +7,10 @@ item_list = [
     "MP9 | Music Box"
 ]
 
-SKINBARON_API_KEY = ENV['SKINBARON_API_KEY']
+request_interval_seconds = 60
 
+SKINBARON_API_KEY = ENV['SKINBARON_API_KEY']
 SKINPORT_CLIENT_ID = ENV["SKINPORT_CLIENT_ID"]
 SKINPORT_CLIENT_SECRET = ENV["SKINPORT_CLIENT_SECRET"]
 
-mainloop(ENV["PRICE"].to_f || 0, item_list)
+mainloop(ENV["PRICE"].to_f || 0, item_list, request_interval_seconds)

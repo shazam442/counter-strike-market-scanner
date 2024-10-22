@@ -6,6 +6,7 @@ class Skinport
     attr_accessor :item_list
 
     def initialize(client_id, client_secret, item_list)
+        verifyInitParams(client_id, client_secret, item_list)
         @BASE_API_URL = "https://api.skinport.com/v1"
         @base_headers = {
             "Content-Type" => "application/json",
@@ -36,7 +37,7 @@ class Skinport
         HTTParty.get(
             url_to_endpoint,
             headers: headers,
-            body: body
+            body: body, :debug_output => $stdout
         )
     end
 
@@ -88,6 +89,12 @@ class Skinport
         
         allowed_items_filtered_sorted = allowed_items_filtered.sort_by { |item| item['market_hash_name'] }
         transform_data(allowed_items_filtered_sorted)
+    end
+
+    def verifyInitParams(client_id, client_secret, item_list)
+        raise "check instanciation parameters" if client_id.empty? || client_secret.empty? || item_list.empty? || !item_list.is_a?(Array)
+        raise("CLIENT ID ABNORMALLY SHORT. PLEASE CHECK YOUR CLIENT ID") unless client_id.length >= 20
+        raise("CLIENT SECRET ABNORMALLY SHORT. PLEASE CHECK YOUR CLIENT SECRET") unless client_secret.length >= 30
     end
 end
 end

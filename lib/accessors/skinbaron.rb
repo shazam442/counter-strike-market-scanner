@@ -3,6 +3,7 @@ class Skinbaron
     attr_accessor :item_list
     
     def initialize(api_key, item_list)
+        verifyInitParams(api_key, item_list)
         @base_url = 'https://api.skinbaron.de'
     
         @item_list = item_list
@@ -14,6 +15,7 @@ class Skinbaron
         @base_body = {
             :apikey => api_key
         }
+
     end
 
     def getBalance
@@ -21,7 +23,7 @@ class Skinbaron
         response[:balance]
     end
 
-    def getListings 
+    def getListings
         listings = @item_list.map { |i| getCheapestListing(i) }
         listings.compact
     end
@@ -85,6 +87,11 @@ class Skinbaron
 
     def buyLogger(message)
         File.write(File.join(File.dirname(__FILE__), '../logs/buy_log.txt'), message, mode: 'a')
+    end
+
+    def verifyInitParams(api_key, item_list)
+        raise "check instanciation parameters" if api_key.empty? || item_list.empty? || !item_list.is_a?(Array)
+        raise("API KEY LENGTH ABNORMALLY SHORT. PLEASE CHECK YOUR API KEY") unless api_key.length >= 30
     end
 end
 end

@@ -8,7 +8,7 @@ require_relative './steamscraper.rb'
 require_relative './accessors/skinport.rb'
 require_relative './accessors/skinbaron.rb'
 
-def mainloop(price_alert, item_list)
+def mainloop(price_alert, item_list, request_interval_seconds)
     skinport = API::Skinport.new(SKINPORT_CLIENT_ID, SKINPORT_CLIENT_SECRET, item_list)
     skinbaron = API::Skinbaron.new(SKINBARON_API_KEY, item_list)
     
@@ -28,19 +28,14 @@ def mainloop(price_alert, item_list)
         puts listings
 
         priceAlertMatches = filterByPriceAlert(listings, price_alert)
-        purchaseItems(priceAlertMatches, skinbaron, balance) # skinport does not allow purchase via api
+        purchaseItems(priceAlertMatches, skinbaron, skinbaron_balance_EUR) # skinport does not allow purchase via api
 
-        loading_time 60
+        requestDelaySeconds request_interval_seconds
     end
 rescue SocketError, Net::OpenTimeout
     system('clear') && puts("COULD NOT ESTABLISH CONNECTION")
-    loading_time(5)
-    mainloop(price_alert)
-rescue JSON::ParserError => e
-    if e.message.include? "Bad authenticity token"
-        pp "STACK TRACE", e.backtrace
-        raise "Bad Authenticity Token"
-    end
+    requestDelaySeconds request_interval_seconds
+    mainloop(price_alert, item_list, request_interval_seconds)
 end
 
 def purchaseItems(listings, skinbaron, balance)
@@ -60,12 +55,16 @@ end
 
 def getAllListings(skinbaron, skinport)
     result = Array.new
-    result << skinbaron.getListings << skinport.getListings
+    result
+        .concat(skinbaron.getListings)
+        .concat(skinport.getListings)
     
-    # result.sort_by { |_key, value| -value}
+    cleaned_result = result.select { |listing| not listing[:price].nil? }
+    
+    cleaned_result.sort_by { |listing| listing[:price] }
 end
 
-def loading_time seconds
+def requestDelaySeconds seconds
     timer = "[#{"-"*seconds}]\r"
     for _ in 0..seconds do
         print timer
