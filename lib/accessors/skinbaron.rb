@@ -15,7 +15,7 @@ class Skinbaron
         @base_body = {
             :apikey => api_key
         }
-
+        @logger = Logger.new('logs/app.log', 1)
     end
 
     def getBalance
@@ -29,17 +29,14 @@ class Skinbaron
     end
 
     def buyItem(price, id)
-        buyLogger("#{Time.now.round}\n Attempting to Buy Item #{id} for #{price}:\n")
+        @logger.info("#{Time.now.round}\n Attempting to Buy Item #{id} for #{price}:\n")
 
         body = {
             total: price,
             toInventory: true,
             saleids: [id]
         }
-        response = post(endpoint: "BuyItems", body: body )
-        buyLogger("#{response}\n\n")
-
-        response  
+        post(endpoint: "BuyItems", body: body )
     end
 
     private
@@ -53,11 +50,10 @@ class Skinbaron
         headers = @base_headers.merge(params[:headers] || {})
         url_to_endpoint = "#{@base_url}/#{params[:endpoint]}"
     
-        HTTParty.post(
-            url_to_endpoint,
-            :body => body,
-            :headers => headers,
-        )
+        response = HTTParty.post(url_to_endpoint, :body => body, :headers => headers)
+
+        logResponse(response, params[:endpoint])
+        response
     end
 
     def getCheapestListing item_name
@@ -76,7 +72,9 @@ class Skinbaron
             item["wear"] < 0.07 # Factory New
         end
 
-        cheapest = wear_filtered_items.min_by { |item| item["price"]}
+        
+        cheapest = wear_filtered_items.min_by { |item| item["price"]} || {}
+        byebug if cheapest.nil?
         return {
             price: cheapest["price"],
             source: 'Skinbaron',
@@ -85,8 +83,14 @@ class Skinbaron
         }
     end
 
-    def buyLogger(message)
-        File.write(File.join(File.dirname(__FILE__), '../logs/buy_log.txt'), message, mode: 'a')
+    def logResponse(response, endpoint)
+        @logger.debug(
+            JSON.pretty_generate({
+                source: "#{self.class.to_s}/#{endpoint}",
+                code: "#{response.code.to_s} #{response.message}",
+                body: response.to_h
+            })
+        )
     end
 
     def verifyInitParams(api_key, item_list)

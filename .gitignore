@@ -5,3 +5,4 @@
 **/.byebug_history
 .env
 test.rb
+logs/app.log

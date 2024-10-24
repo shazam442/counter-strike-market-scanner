@@ -3,6 +3,7 @@ require 'httparty'
 require 'dotenv/load'
 require 'byebug'
 require 'colorize'
+require 'logger'
 
 require_relative './accessors/steamscraper.rb'
 require_relative './accessors/skinport.rb'
