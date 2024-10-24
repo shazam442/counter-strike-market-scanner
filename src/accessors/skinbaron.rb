@@ -10,12 +10,13 @@ class Skinbaron
         
         @base_headers = {
             "Content-Type" => "application/json",
-            "x-requested-with" => "XMLHttpRequest"
+            "x-requested-with" => "XMLHttpRequest",
+            "Connection" => "keep-alive"
         }
         @base_body = {
             :apikey => api_key
         }
-        @logger = Logger.new('logs/app.log', 1)
+        @logger = Logger.new('logs/skinbaron.log', 1)
     end
 
     def getBalance
@@ -24,7 +25,10 @@ class Skinbaron
     end
 
     def getListings
-        listings = @item_list.map { |i| getCheapestListing(i) }
+        listings = @item_list.map do |i|
+            getCheapestListing(i)
+            sleep(1)
+        end
         listings.compact
     end
 
@@ -88,7 +92,7 @@ class Skinbaron
             JSON.pretty_generate({
                 source: "#{self.class.to_s}/#{endpoint}",
                 code: "#{response.code.to_s} #{response.message}",
-                body: response.to_h
+                body: response.to_s.start_with?("{") ? response.to_h : response
             })
         )
     end

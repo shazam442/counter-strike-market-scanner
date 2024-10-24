@@ -10,6 +10,7 @@ require_relative './accessors/skinport.rb'
 require_relative './accessors/skinbaron.rb'
 
 def mainloop(price_alert, item_list, request_interval_seconds)
+    logger = Logger.new("logs/rescue.log", 1)
     skinport = API::Skinport.new(SKINPORT_CLIENT_ID, SKINPORT_CLIENT_SECRET, item_list)
     skinbaron = API::Skinbaron.new(SKINBARON_API_KEY, item_list)
     
@@ -33,7 +34,8 @@ def mainloop(price_alert, item_list, request_interval_seconds)
 
         requestDelaySeconds request_interval_seconds
     end
-rescue SocketError, Net::OpenTimeout
+rescue SocketError, Net::OpenTimeout => e
+    logger.fatal(e)
     system('clear') && puts("COULD NOT ESTABLISH CONNECTION")
     requestDelaySeconds request_interval_seconds
     mainloop(price_alert, item_list, request_interval_seconds)
