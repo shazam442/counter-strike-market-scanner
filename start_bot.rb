@@ -1,4 +1,4 @@
-require_relative './lib/main.rb'
+require_relative './src/main.rb'
 
 item_list = [
     "M249 | Humidor",
