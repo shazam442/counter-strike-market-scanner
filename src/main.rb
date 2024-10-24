@@ -10,7 +10,7 @@ require_relative './accessors/skinport.rb'
 require_relative './accessors/skinbaron.rb'
 
 def mainloop(price_alert, item_list, request_interval_seconds)
-    logger = Logger.new("logs/rescue.log", 1)
+    logger = Logger.new("logs/app.log", 1)
     skinport = API::Skinport.new(SKINPORT_CLIENT_ID, SKINPORT_CLIENT_SECRET, item_list)
     skinbaron = API::Skinbaron.new(SKINBARON_API_KEY, item_list)
     
@@ -20,7 +20,7 @@ def mainloop(price_alert, item_list, request_interval_seconds)
         steam_price = steam_listings.min_by { |l| l[:price] }
 
         skinbaron_balance_EUR = skinbaron.getBalance.to_f
-        listings = getAllListings(skinbaron, skinport)
+        listings = getAllListings(skinbaron, skinport, logger)
 
         system("clear"); sleep(1)
 
@@ -56,13 +56,19 @@ def filterByPriceAlert(listings, price_alert)
     end
 end
 
-def getAllListings(skinbaron, skinport)
+def getAllListings(skinbaron, skinport, logger)
     result = Array.new
     result
         .concat(skinbaron.getListings)
         .concat(skinport.getListings)
+
+    logger.debug(JSON.pretty_generate(["getAllListings uncleaned Result"].concat(result)))
     
-    cleaned_result = result.select { |listing| not listing[:price].nil? }
+    cleaned_result = result.select do |listing|
+        next unless listing.is_a? Hash
+        next if listing[:price].nil?
+        true
+    end
     
     cleaned_result.sort_by { |listing| listing[:price] }
 end

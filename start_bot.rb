@@ -1,10 +1,10 @@
 require_relative './src/main.rb'
 
 item_list = [
-    "M249 | Humidor",
-    "SG 553 | Desert Blossom",
-    "USP-S | Purple DDPAT",
-    "MP9 | Music Box"
+    "M249 | Humidor (Factory New)",
+    "SG 553 | Desert Blossom (Factory New)",
+    "USP-S | Purple DDPAT (Factory New)",
+    "MP9 | Music Box (Factory New)"
 ]
 
 request_interval_seconds = 60

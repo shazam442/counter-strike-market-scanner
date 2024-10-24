@@ -26,8 +26,8 @@ class Skinbaron
 
     def getListings
         listings = @item_list.map do |i|
-            getCheapestListing(i)
             sleep(1)
+            getCheapestListing(i)
         end
         listings.compact
     end
