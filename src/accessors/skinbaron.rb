@@ -2,11 +2,14 @@ module API
 class Skinbaron
     attr_accessor :item_list
     
-    def initialize(api_key, item_list)
-        verifyInitParams(api_key, item_list)
+    def initialize(api_key, targets)
+        verifyInitParams(api_key, targets)
         @base_url = 'https://api.skinbaron.de'
     
-        @item_list = item_list
+
+        
+        @item_list = targets[:item_list]
+        @min_wear, @max_wear = targets[:min_wear], targets[:max_wear]
         
         @base_headers = {
             "Content-Type" => "application/json",
@@ -56,7 +59,7 @@ class Skinbaron
     
         response = HTTParty.post(url_to_endpoint, :body => body, :headers => headers)
 
-        logResponse(response, params[:endpoint])
+        logResponse(response, params[:endpoint], params[:body])
         response
     end
 
@@ -65,6 +68,7 @@ class Skinbaron
             appid: 730,
             search_item: item_name,
             tradelocked: true,
+            stattrak: true,
             souvenir: false,
             items_per_page: 0
         }
@@ -73,7 +77,8 @@ class Skinbaron
 
         items = response.to_h["sales"]
         wear_filtered_items = items.select do |item|
-            item["wear"] < 0.07 # Factory New
+            item["wear"] <= @max_wear && item["wear"] >= @min_wear
+
         end
 
         
@@ -81,25 +86,27 @@ class Skinbaron
         byebug if cheapest.nil?
         return {
             price: cheapest["price"],
+            wear: cheapest["wear"],
             source: 'Skinbaron',
             item_name: cheapest['market_name'],
             id: cheapest['id']
         }
     end
 
-    def logResponse(response, endpoint)
+    def logResponse(response, endpoint, request_body)
         @logger.debug(
             JSON.pretty_generate({
                 source: "#{self.class.to_s}/#{endpoint}",
                 code: "#{response.code.to_s} #{response.message}",
-                body: response.to_s.start_with?("{") ? response.to_h : response
+                request_payload: request_body,
+                response_body: response.to_s.start_with?("{") ? response.to_h : response
             })
         )
     end
 
-    def verifyInitParams(api_key, item_list)
-        raise "check instanciation parameters" if api_key.empty? || item_list.empty? || !item_list.is_a?(Array)
-        raise("API KEY LENGTH ABNORMALLY SHORT. PLEASE CHECK YOUR API KEY") unless api_key.length >= 30
+    def verifyInitParams(api_key, targets)
+        raise "check instanciation parameters" unless targets in { item_list: Array , min_wear: Numeric, max_wear: Numeric }
+        raise("CHECK API KEY LENGTH AND VALIDITY") if api_key.length <= 30 || api_key.empty?
     end
 end
 end

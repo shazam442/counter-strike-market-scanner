@@ -1,16 +1,20 @@
-require_relative './src/main.rb'
+require_relative './src/main'
 
-item_list = [
-    "M249 | Humidor (Factory New)",
-    "SG 553 | Desert Blossom (Factory New)",
-    "USP-S | Purple DDPAT (Factory New)",
-    "MP9 | Music Box (Factory New)"
-]
+default_config = {
+    targets: [],
+    target_price: 0,
+    request_interval_seconds: 60,
+    env: {
+        "skinbaron_api_key": ENV['SKINBARON_API_KEY'],
+        "skinport_client_id": ENV["SKINPORT_CLIENT_ID"],
+        "skinport_client_secret": ENV["SKINPORT_CLIENT_SECRET"]
+    }
+}
 
-request_interval_seconds = 60
+file = File.read("config.json")
+file_config = JSON.parse(file).transform_keys(&:to_sym)
+file_config[:targets].transform_keys!(&:to_sym)
 
-SKINBARON_API_KEY = ENV['SKINBARON_API_KEY']
-SKINPORT_CLIENT_ID = ENV["SKINPORT_CLIENT_ID"]
-SKINPORT_CLIENT_SECRET = ENV["SKINPORT_CLIENT_SECRET"]
+config = default_config.merge file_config
 
-mainloop(ENV["PRICE"].to_f || 0, item_list, request_interval_seconds)
+mainloop(config)

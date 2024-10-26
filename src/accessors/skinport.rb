@@ -5,8 +5,8 @@ class Skinport
     attr_reader :last_fetched_listings
     attr_accessor :item_list
 
-    def initialize(client_id, client_secret, item_list)
-        verifyInitParams(client_id, client_secret, item_list)
+    def initialize(client_id, client_secret, targets)
+        verifyInitParams(client_id, client_secret, targets)
         @BASE_API_URL = "https://api.skinport.com/v1"
         @base_headers = {
             "Content-Type" => "application/json",
@@ -16,7 +16,9 @@ class Skinport
         @base_body = {
             currency: 'EUR'
         }
-        @item_list = item_list
+        @item_list = targets[:item_list]
+        @min_wear, @max_wear = targets[:min_wear], targets[:max_wear]
+
         @last_item_fetch_time = Time.now - 6 * 60 # set over 5 minutes ago, to trigger api call in getListings func
         @logger = Logger.new('logs/skinport.log', 2)
     end
@@ -24,7 +26,7 @@ class Skinport
     def getListings
         return @last_fetched_listings if @last_item_fetch_time >= (Time.now - 5 * 60) # skinport endpoint is cached by 5 minutes
         
-        deny_array = [ 'Souvenir', 'StatTrak' ]
+        deny_array = [ 'Souvenir' ]
         @last_fetched_listings = fetchListings({allow_array: @item_list, deny_array: deny_array})
     end
 
@@ -105,10 +107,9 @@ class Skinport
         @logger.error(response, endpoint)
     end
 
-    def verifyInitParams(client_id, client_secret, item_list)
-        raise "check instanciation parameters" if client_id.empty? || client_secret.empty? || item_list.empty? || !item_list.is_a?(Array)
-        raise("CLIENT ID ABNORMALLY SHORT. PLEASE CHECK YOUR CLIENT ID") unless client_id.length >= 20
-        raise("CLIENT SECRET ABNORMALLY SHORT. PLEASE CHECK YOUR CLIENT SECRET") unless client_secret.length >= 30
+    def verifyInitParams(client_id, client_secret, targets)
+        raise "skinport client id or secret empty" if client_id.empty? || client_secret.empty?
+        raise "check instanciation parameters" unless targets in { item_list: Array , min_wear: Numeric, max_wear: Numeric }
     end
 end
 end
