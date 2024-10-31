@@ -1,13 +1,5 @@
-require 'json'
-require 'httparty'
-require 'dotenv/load'
-require 'byebug'
-require 'colorize'
-require 'logger'
-
-# require_relative './accessors/steamscraper.rb'
-require_relative './accessors/skinport.rb'
-require_relative './accessors/skinbaron.rb'
+require_relative './accessors/skinport'
+require_relative './accessors/skinbaron'
 
 def mainloop(config)
     config => {
@@ -25,12 +17,12 @@ def mainloop(config)
     logger = Logger.new("logs/app.log", 1)
     skinbaron = API::Skinbaron.new(skinbaron_api_key, targets)
     skinport = API::Skinport.new(skinport_client_id, skinport_client_secret, targets)
-    steam = API::Steam.new(targets)
+    # steam = API::Steam.new(targets)
     
     system("clear")-
     while true
-        steam_listings = SteamScraper.getListings.reject { |l| l[:price].nil? }
-        steam_price = steam_listings.min_by { |l| l[:price] }
+        # steam_listings = steam.getListings
+        # steam_price = steam_listings.min_by { |l| l[:price] }
 
         skinbaron_balance_EUR = skinbaron.getBalance.to_f
         listings = getAllListings(skinbaron, skinport, logger)

@@ -1,5 +1,3 @@
-require 'base64'
-
 module API
 class Skinport
     attr_reader :last_fetched_listings

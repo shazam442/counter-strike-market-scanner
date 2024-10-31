@@ -8,7 +8,7 @@
             "type": "ruby_lsp",
             "name": "Debug script",
             "request": "launch",
-            "program": "ruby ${file}"
+            "program": "ruby start_bot.rb"
         },
         {
             "type": "ruby_lsp",

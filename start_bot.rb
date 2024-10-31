@@ -1,3 +1,12 @@
+require 'json'
+require 'httparty'
+require 'dotenv/load'
+require 'byebug'
+require 'colorize'
+require 'logger'
+require 'base64'
+require 'nokogiri'
+
 require_relative './src/main'
 
 default_config = {

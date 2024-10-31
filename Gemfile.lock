@@ -10,12 +10,7 @@ GEM
     mime-types (3.4.1)
       mime-types-data (~> 3.2015)
     mime-types-data (3.2022.0105)
-    mini_portile2 (2.7.1)
     multi_xml (0.6.0)
-    nokogiri (1.13.0)
-      mini_portile2 (~> 2.7.0)
-      racc (~> 1.4)
-    racc (1.6.0)
 
 PLATFORMS
   ruby
@@ -26,7 +21,6 @@ DEPENDENCIES
   colorize
   dotenv
   httparty (~> 0.20.0)
-  nokogiri (~> 1.12, >= 1.12.5)
 
 RUBY VERSION
    ruby 3.3.5p100
