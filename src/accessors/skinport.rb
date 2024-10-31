@@ -1,10 +1,6 @@
 module API
 class Skinport
-    attr_reader :last_fetched_listings
-    attr_accessor :item_list
-
     def initialize(client_id, client_secret, targets)
-        verifyInitParams(client_id, client_secret, targets)
         @BASE_API_URL = "https://api.skinport.com/v1"
         @base_headers = {
             "Content-Type" => "application/json",
@@ -103,11 +99,6 @@ class Skinport
         )
     rescue
         @logger.error(response, endpoint)
-    end
-
-    def verifyInitParams(client_id, client_secret, targets)
-        raise "skinport client id or secret empty" if client_id.empty? || client_secret.empty?
-        raise "check instanciation parameters" unless targets in { item_list: Array , min_wear: Numeric, max_wear: Numeric }
     end
 end
 end

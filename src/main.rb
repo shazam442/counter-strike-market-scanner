@@ -14,7 +14,7 @@ def mainloop(config)
     }
     target_price = target_price.to_f
 
-    logger = Logger.new("logs/app.log", 1)
+    logger = Logger.new("logs/main.log", 1)
     skinbaron = API::Skinbaron.new(skinbaron_api_key, targets)
     skinport = API::Skinport.new(skinport_client_id, skinport_client_secret, targets)
     # steam = API::Steam.new(targets)

@@ -1,12 +1,7 @@
 module API
 class Skinbaron
-    attr_accessor :item_list
-    
     def initialize(api_key, targets)
-        verifyInitParams(api_key, targets)
         @base_url = 'https://api.skinbaron.de'
-    
-
         
         @item_list = targets[:item_list]
         @min_wear, @max_wear = targets[:min_wear], targets[:max_wear]
@@ -102,11 +97,6 @@ class Skinbaron
                 response_body: response.to_s.start_with?("{") ? response.to_h : response
             })
         )
-    end
-
-    def verifyInitParams(api_key, targets)
-        raise "check instanciation parameters" unless targets in { item_list: Array , min_wear: Numeric, max_wear: Numeric }
-        raise("CHECK API KEY LENGTH AND VALIDITY") if api_key.length <= 30 || api_key.empty?
     end
 end
 end
