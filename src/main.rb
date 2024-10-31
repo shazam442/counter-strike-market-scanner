@@ -1,9 +1,10 @@
 require_relative './accessors/skinport'
 require_relative './accessors/skinbaron'
+require_relative './accessors/steam_inventory_helper'
+require_relative './accessors/steammarket'
 
 def mainloop(config)
     config => {
-        targets:,
         target_price:,
         request_interval_seconds:,
         env: {
@@ -15,8 +16,11 @@ def mainloop(config)
     target_price = target_price.to_f
 
     logger = Logger.new("logs/main.log", 1)
-    skinbaron = API::Skinbaron.new(skinbaron_api_key, targets)
-    skinport = API::Skinport.new(skinport_client_id, skinport_client_secret, targets)
+    # skinbaron = API::Skinbaron.new(skinbaron_api_key, targets)
+    # skinport = API::Skinport.new(skinport_client_id, skinport_client_secret, targets)
+    steam_market = API::SteamMarket.new(config)
+    steam_market.getListings
+    byebug
     # steam = API::Steam.new(targets)
     
     system("clear")-
@@ -24,8 +28,8 @@ def mainloop(config)
         # steam_listings = steam.getListings
         # steam_price = steam_listings.min_by { |l| l[:price] }
 
-        skinbaron_balance_EUR = skinbaron.getBalance.to_f
-        listings = getAllListings(skinbaron, skinport, logger)
+        # skinbaron_balance_EUR = skinbaron.getBalance.to_f
+        # listings = getAllListings(skinbaron, skinport, logger)
 
         system("clear"); sleep(1)
 
@@ -77,9 +81,10 @@ end
 
 def loadingBar seconds
     timer = "[#{"-"*seconds}]\r"
-    for _ in 0..seconds do
+    
+    seconds.times do
         print timer
-        timer.sub!("-","*")
-        10.times { sleep 0.1 }
-    end
+        timer.sub!("-", "*")
+        sleep 1
+      end
 end
