@@ -1,10 +1,10 @@
 require_relative './accessors/skinport'
 require_relative './accessors/skinbaron'
-require_relative './accessors/steam_inventory_helper'
 require_relative './accessors/steammarket'
 
 def mainloop(config)
     config => {
+        targets:,
         target_price:,
         request_interval_seconds:,
         env: {
@@ -16,26 +16,22 @@ def mainloop(config)
     target_price = target_price.to_f
 
     logger = Logger.new("logs/main.log", 1)
-    # skinbaron = API::Skinbaron.new(skinbaron_api_key, targets)
-    # skinport = API::Skinport.new(skinport_client_id, skinport_client_secret, targets)
-    steam_market = API::SteamMarket.new(config)
-    steam_market.getListings
-    byebug
-    # steam = API::Steam.new(targets)
-    
-    system("clear")-
-    while true
-        # steam_listings = steam.getListings
-        # steam_price = steam_listings.min_by { |l| l[:price] }
 
-        # skinbaron_balance_EUR = skinbaron.getBalance.to_f
-        # listings = getAllListings(skinbaron, skinport, logger)
+    steam_market = API::SteamMarket.new(config)
+    skinbaron = API::Skinbaron.new(skinbaron_api_key, targets)
+    skinport = API::Skinport.new(skinport_client_id, skinport_client_secret, targets)
+    
+    system("clear")
+    while true
+        steam_market_listings = steam_market.getListings
+
+        skinbaron_balance_EUR = skinbaron.getBalance.to_f
+        listings = getAllListings(skinbaron, skinport, steam_market, logger)
 
         system("clear"); sleep(1)
 
         puts "Buying for: #{target_price}"
         puts "Skinbaron Balance: " << "#{skinbaron_balance_EUR} €".green
-        # puts "Steam Price Reference: " << "#{steam_price&.[] :price} € - #{steam_price&.[] :item_name}".yellow
         puts listings
 
         target_price_matches = filterByTargetPrice(listings, target_price)
@@ -62,7 +58,7 @@ def filterByTargetPrice(listings, target_price)
     listings.select { |l| (l in { source: 'Skinbaron', price: Float => price }) && price <= target_price }
 end
 
-def getAllListings(skinbaron, skinport, logger)
+def getAllListings(skinbaron, skinport, steam_market, logger)
     result = Array.new
     result
         .concat(skinbaron.getListings)

@@ -1,10 +1,9 @@
 {
-    "target_price": 0.00,
-    "targets": {
-            "item_list": [
-                "Sawed-Off | Analog Input"
-            ],
-            "min_wear": 0.07,
-            "max_wear": 0.1 },
-    "request_interval_seconds": 60
+  "target_price": 0.0,
+  "targets": {
+    "item_list": ["Sawed-Off | Analog Input"],
+    "min_wear": 0.0000000000001,
+    "max_wear": 0.01
+  },
+  "request_interval_seconds": 60
 }

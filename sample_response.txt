@@ -1,0 +1,6 @@
+{
+  "success": true,
+  "lowest_price": "305,75€",
+  "volume": "1",
+  "median_price": "310,02€"
+}

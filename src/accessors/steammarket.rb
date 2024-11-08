@@ -1,48 +1,77 @@
 require 'httparty'
 require 'json'
 require 'logger'
+require_relative '../helpers/float_wear_helper'
 
 module API
   class SteamMarket
+    include FloatHelper
+    
     def initialize(config)
-      @base_url = 'https://steamcommunity.com/market/search/render'
-      @item_list = config[:targets][:item_list]
-      @min_wear = config[:targets][:min_wear]
-      @max_wear = config[:targets][:max_wear]
+      @base_url = 'https://steamcommunity.com/market/priceoverview'
+      @base_params = { currency: 3, appid: 730 }
+      @base_headers = {
+        "Content-Type" => "application/json",
+        "x-requested-with" => "XMLHttpRequest",
+        "Connection" => "keep-alive"
+      }
+
       @logger = Logger.new('logs/steammarket.log', 1)
+
+      @item_list = applyWearLevelsToItemNames(config)
     end
 
     def getListings
-      @item_list.each do |item|
-        response = get(query: item)
-        listings = response["results"]
-        logResponse(response, item)
-        # Process listings as needed
+      @item_list.map do |item|
+        response = fetchPriceOverview(item)
+        price = response["lowest_price"].sub("€", "").sub(",", ".").to_f
+        sleep(0.2)
+        
+        buildItemPriceHash(item, price)
       end
     end
 
+    # def getPriceReferences
+    #   @item_list.map do |item|
+    #     response = fetchPriceOverview(item)
+        
+    # end
+
     private
 
-    def get(params = {})
-      raise "Query must be specified" if params[:query].nil?
-
-      url = "#{@base_url}?norender=1&start=0&count=99&appid=730&query=#{params[:query]}"
+    def buildItemPriceHash(item, price) = { source: 'SteamMarket', price: price, item_name: item }
+    
+    def fetchPriceOverview(market_hash_name)
+      raise "Item must be specified" if market_hash_name.nil?
+      
+      body = @base_params.merge( market_hash_name: market_hash_name )
+      url = "#{@base_url}?#{URI.encode_www_form(body)}"
+      
       response = HTTParty.get(url)
-      raise "Failed to fetch data: #{response.code} #{response.message}" unless response.success?
+      logResponse(response, market_hash_name)
+      raise "Failed to fetch data: #{response.code} #{response.message}" unless response.success? && response.to_h["success"] == true
 
       response.to_h
     end
 
-    def logResponse(response, query)
+    def applyWearLevelsToItemNames(config)
+      wear_levels = float_range_to_wear_levels(config[:targets][:min_wear], config[:targets][:max_wear])
+      
+      wear_levels.map do |wear|
+        config[:targets][:item_list].map { |item| "#{item} (#{wear})" }
+      end.flatten
+    end
+    
+    def logResponse(response, item)
       @logger.debug(
         JSON.pretty_generate({
-          source: "#{self.class.to_s}/#{query}",
-          code: "#{response.code.to_s} #{response.message}",
-          body: response.to_s.start_with?("[") ? response.to_a : response
+          source: "#{self.class.to_s}/#{item}",
+          code: "#{response.code} #{response.message}",
+          body: response
         })
       )
     rescue
-      @logger.error(response, query)
+      @logger.error([response, item])
     end
   end
 end

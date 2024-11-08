@@ -25,7 +25,7 @@ class Skinbaron
     def getListings
         listings = @item_list.map do |i|
             sleep(1)
-            getCheapestListing(i)
+            getCheapestListingForEachWearLevel(i)
         end
         listings.compact
     end
@@ -58,26 +58,41 @@ class Skinbaron
         response
     end
 
-    def getCheapestListing item_name
+    def getCheapestListingForEachWearLevel item_name
         body = {
             appid: 730,
             search_item: item_name,
-            tradelocked: true,
-            stattrak: true,
+            min_wear: @min_wear,
+            max_wear: @max_wear,
             souvenir: false,
-            items_per_page: 0
+            items_per_page: 99
         }
+    
+        item_list = []
+        
         response = post(endpoint: "Search", body: body)
         return {error: 'TOO MANY REQUESTS', source: 'Skinbaron'} if response.code == 429
 
-        items = response.to_h["sales"]
-        wear_filtered_items = items.select do |item|
-            item["wear"] <= @max_wear && item["wear"] >= @min_wear
+        item_list.concat(response.to_h["sales"])
+        item_list = response.to_h["sales"]
 
-        end
-
+        item_list.select! { |item| item["price"] != 0 } # remove items with no price
+        return nil if item_list.empty? # return nil if no items are found
+        item_list.select! { |item| itemWithinWearLimits(item) } # remove items that are not within wear limits
         
-        cheapest = wear_filtered_items.min_by { |item| item["price"]} || {}
+        # min by price for each wear level outputs a hash of wear level => item
+        wear_filtered_items = grouped_item_list.map do |wear, items|
+            items.min_by { |item| item["price"] }
+        end
+        
+        
+        # group by wear level substring within market_name
+        grouped_item_list = wear_filtered_items.group_by { |item| item["market_name"].match(/\(([^)]+)\)/)[1] }
+        
+        cheapest = wear_filtered_items.flatten.min_by do |item|
+            debugger if item.is_a? Array
+            item["price"]
+        end
         byebug if cheapest.nil?
         return {
             price: cheapest["price"],
@@ -87,6 +102,8 @@ class Skinbaron
             id: cheapest['id']
         }
     end
+
+    def itemWithinWearLimits(item) = item["wear"] <= @max_wear && item["wear"] >= @min_wear
 
     def logResponse(response, endpoint, request_body)
         @logger.debug(
